@@ -82,7 +82,8 @@ class ScopeTreeRoot(ScopeTreeNode):
     @classmethod
     def from_file(cls, path: str) -> ScopeTreeRoot:
         with open(path, "r", encoding="utf-8") as f:
-            symbols = symtable.symtable(f.read(), path, "exec")
+            code = f.read()
+        symbols = symtable.symtable(code, path, "exec")
         return ScopeTreeRoot(symbols, path)
 
 
