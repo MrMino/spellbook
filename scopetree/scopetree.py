@@ -11,7 +11,11 @@ import textwrap
 
 
 class ScopeTreeNode:
-    def __init__(self, symbols: symtable.SymbolTable, parent: ScopeTreeNode) -> None:
+    def __init__(
+        self,
+        symbols: symtable.SymbolTable,
+        parent: ScopeTreeNode | None,
+    ) -> None:
         self.symbols = symbols
         self.children = []
         self.child_names = []
@@ -41,7 +45,7 @@ class ScopeTreeNode:
 
     @property
     def qualname(self) -> str:
-        return self.parent.qualname + "." + self.name
+        return self.parent.qualname + "." + self.name if self.parent is not None else ""
 
     @property
     def kind(self) -> str:
@@ -66,7 +70,7 @@ class ScopeTreeRoot(ScopeTreeNode):
             path = "<unnamed module>"
         self.path = path
 
-        super().__init__(symbols, self)
+        super().__init__(symbols, None)
 
     def __str__(self):
         return f"Global scope ({self.path})"
@@ -74,10 +78,6 @@ class ScopeTreeRoot(ScopeTreeNode):
     @property
     def name(self) -> str:
         return "."
-
-    @property
-    def qualname(self) -> str:
-        return ""
 
     @classmethod
     def from_file(cls, path: str) -> ScopeTreeRoot:
