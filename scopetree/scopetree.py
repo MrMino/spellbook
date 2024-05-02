@@ -17,7 +17,17 @@ class ScopeTreeNode:
         self.child_names = []
         self.parent = parent
 
-        for child in symbols.get_children():
+        # The children symbol tables aren't necessarily ordered by their line numbers.
+        # Consider the following code:
+        #
+        #     @lambda func: None
+        #     def same_lineno() -> lambda: None:
+        #         pass
+        #
+        # The decorator lambda will come after the returntype lambda.
+        children = sorted(symbols.get_children(), key=lambda s: s.get_lineno())
+
+        for child in children:
             new_node = ScopeTreeNode(child, self)
             self.children.append(new_node)
             self.child_names.append(new_node.name)
