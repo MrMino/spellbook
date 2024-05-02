@@ -33,3 +33,40 @@ def nest():
 def klas():
     class dew:
         pass
+
+
+def comprehensions_and_generators():
+    [x for x in x()]
+    {k: v for k, v in x()}
+    {i for i in x()}
+    lambda y: 1 + y
+    set(a for a in [1, 2, 3])
+
+# Oh. My. God.
+from inspect import isclass
+class PleaseStop(*[cls for cls in globals().values() if isclass(cls)]):
+    pass
+
+print(PleaseStop.__mro__)
+
+
+# That's cursed.
+def what_the() -> lambda: "heck":
+    pass
+
+
+# Confusion.
+# These lambdas switch places in the symtable scope list
+@lambda func: None
+def same_lineno() -> lambda: None:
+    pass
+
+
+@lambda cls: None
+class Decorated((lambda: object)(), (lambda: C1)()):
+    pass
+
+class WhichLambdaIsWhich:
+    @lambda d: None
+    def confusing(arg=lambda x: None) -> lambda y: None:
+        pass
