@@ -16,10 +16,15 @@ import textwrap
 
 from flatten_ast import flatten_ast
 
-SCOPE_GENERATING = (
-    ast.FunctionDef,
-    ast.AsyncFunctionDef,
-    ast.ClassDef,
+EXPR_NAMES = (
+    "lambda",
+    "listcomp",
+    "setcomp",
+    "dictcomp",
+    "genexpr",
+)
+
+SCOPED_EXPR = (
     ast.Lambda,
     ast.ListComp,
     ast.SetComp,
@@ -27,19 +32,24 @@ SCOPE_GENERATING = (
     ast.GeneratorExp,
 )
 
+SCOPED_STMT = (
+    ast.FunctionDef,
+    ast.AsyncFunctionDef,
+    ast.ClassDef,
+)
+
 
 class ScopeTreeNode:
     def __init__(
         self,
         symbols: symtable.SymbolTable,
-        ast_node: ast.AST,
         parent: ScopeTreeNode | None,
     ) -> None:
         self.symbols = symbols
         self.children = []
         self.child_names = []
         self.parent = parent
-        self.ast_node = ast_node
+        self.ast_node = None  # Assigned by ScopeTreeRoot
 
         # The children symbol tables aren't necessarily ordered by their line numbers.
         # Consider the following code:
@@ -50,30 +60,20 @@ class ScopeTreeNode:
         #
         # The decorator lambda will come after the returntype lambda.
         children = sorted(symbols.get_children(), key=lambda s: s.get_lineno())
-        child_linenos = [table.get_lineno() for table in children]
-        ast_nodes = [
-            node for node in flatten_ast(ast_node) if isinstance(node, SCOPE_GENERATING)
-        ]
-        ast_linenos = [node.lineno for node in ast_nodes]
 
-        scope_to_ast = {}
-        iter_ast_linenos = iter(zip(ast_nodes, ast_linenos))
-
-        for child, child_lineno, (ast_node, ast_lineno) in zip(
-            children, child_linenos, iter_ast_linenos
-        ):
-            while child_lineno != ast_lineno:
-                ast_node, ast_lineno = next(iter_ast_linenos)
-            scope_to_ast[child] = ast_node
-
-        for child, ast_node in scope_to_ast.items():
-            new_node = ScopeTreeNode(child, ast_node, self)
+        for child in children:
+            new_node = ScopeTreeNode(child, self)
             self.children.append(new_node)
             self.child_names.append(new_node.name)
 
     def __str__(self):
         symbols = self.symbols.get_symbols()
-        return f"{self.kind} {self.qualname} (line {self.lineno}, ast {self.ast_node}) {symbols}"
+        ast = (
+            f"ast {self.ast_node.__class__.__name__} lineno {self.ast_node.lineno}"
+            if self.ast_node is not None
+            else "no ast"
+        )
+        return f"{self.kind} {self.qualname} (line {self.lineno}, {ast}) {symbols}"
 
     @property
     def name(self) -> str:
@@ -111,10 +111,45 @@ class ScopeTreeRoot(ScopeTreeNode):
             path = "<unnamed module>"
         self.path = path
 
-        super().__init__(symbols, ast_tree, None)
+        super().__init__(symbols, None)
+
+        self._find_ast_nodes(ast_tree)
 
     def __str__(self):
         return f"Global scope ({self.path})"
+
+    def _find_ast_nodes(self, ast_tree) -> None:
+        # Since scoped expressions violate the ordering between symtable
+        # and ast, we need to take care of them separately.
+        all_nodes = flatten_ast(ast_tree)
+
+        # Take care of functions and classes first:
+        stmt_children = filter(lambda child: child.name not in EXPR_NAMES, self.walk())
+        stmt_nodes = [
+            node for node in all_nodes if isinstance(node, SCOPED_STMT)
+        ]
+
+        for stmt_child, stmt_ast_node in zip(stmt_children, stmt_nodes):
+            stmt_child.ast_node = stmt_ast_node
+
+        # Then find ast nodes for the expression scopes:
+        expr_children = filter(lambda child: child.name in EXPR_NAMES, self.walk())
+        expr_nodes = [
+            node for node in all_nodes if isinstance(node, SCOPED_EXPR)
+        ]
+        for expr_child, expr_ast_node in zip(expr_children, expr_nodes):
+            expr_child.ast_node = expr_ast_node
+
+    def walk(self):
+        """Iterate over the subtree nodes.
+
+        Returns the subtree's nodes excluding this one, in the order of their linenos.
+        """
+        stack = [*(reversed(self.children))]
+        while stack:
+            node = stack.pop()
+            yield node
+            stack.extend(reversed(node.children))
 
     @property
     def name(self) -> str:

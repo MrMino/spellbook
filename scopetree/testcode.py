@@ -43,30 +43,34 @@ def comprehensions_and_generators():
     set(a for a in [1, 2, 3])
 
 # Oh. My. God.
-from inspect import isclass
-class PleaseStop(*[cls for cls in globals().values() if isclass(cls)]):
-    pass
+class CursedCode1:
+    from inspect import isclass
+    class PleaseStop(*[cls for cls in globals().values() if isclass(cls)]):
+        pass
+    print(PleaseStop.__mro__)
 
-print(PleaseStop.__mro__)
 
-
-# That's cursed.
-def what_the() -> lambda: "heck":
-    pass
+class CursedCode2:
+    def what_the() -> lambda: "heck":
+        pass
 
 
 # Confusion.
 # These lambdas switch places in the symtable scope list
-@lambda func: None
-def same_lineno() -> lambda: None:
-    pass
-
-
-@lambda cls: None
-class Decorated((lambda: object)(), (lambda: C1)()):
-    pass
-
-class WhichLambdaIsWhich:
-    @lambda d: None
-    def confusing(arg=lambda x: None) -> lambda y: None:
+class CursedCode3:
+    @lambda func: None
+    def same_lineno() -> lambda: None:
         pass
+
+
+class CursedCode4:
+    @lambda cls: None
+    class Decorated((lambda: object)(), (lambda: C1)()):
+        pass
+
+
+class CursedCode5:
+    class WhichLambdaIsWhich:
+        @lambda d: None
+        def confusing(arg=lambda x: None) -> lambda y: None:
+            pass
