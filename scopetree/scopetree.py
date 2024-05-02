@@ -37,7 +37,8 @@ class ScopeTreeNode:
             self.child_names.append(new_node.name)
 
     def __str__(self):
-        return f"{self.kind} {self.qualname} (line {self.lineno})"
+        symbols = self.symbols.get_symbols()
+        return f"{self.kind} {self.qualname} (line {self.lineno}) {symbols}"
 
     @property
     def name(self) -> str:
