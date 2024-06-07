@@ -1,4 +1,4 @@
-"""Open the given file in the default $EDITOR, at a given line nubmer."""
+"""Open the given file in the default $EDITOR, at a given line number."""
 
 from __future__ import annotations
 
@@ -50,6 +50,7 @@ OPT_GENERATOR = {
     "vi": vi_style_linemark,
     "vim": vi_style_linemark,
     "nvim": vi_style_linemark,
+    "nano": vi_style_linemark,
     "gedit": vi_style_linemark,
     "emacsclient": emacsclient_linemark,
     "code": vscode_goto,
@@ -79,6 +80,7 @@ USES_TTY = {
     "vi": True,
     "vim": True,
     "nvim": True,
+    "nano": True,
     "gedit": False,
     "emacsclient": True,
     "code": False,
