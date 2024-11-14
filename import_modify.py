@@ -260,10 +260,6 @@ if __name__ == "__main__":
 
         new_import_path = sys.argv[3]
 
-        # if import_pattern.startswith("."):
-        #     print("Error: relative imports are not supported yet.")
-        #     sys.exit(1)
-
         modified_tree = wrapper.visit(ImportReplacer(import_pattern, new_import_path))
         new_code = modified_tree.code
         path.write_text(new_code)
