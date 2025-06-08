@@ -63,7 +63,12 @@ def main(args: list[str]):
     lines = [
         node.lineno
         for node in ast_nodes
-        if hasattr(node, "id") and node.id == symbol_name
+        if (
+            hasattr(node, "id")
+            and node.id == symbol_name
+            or hasattr(node, "arg")
+            and node.arg == symbol_name
+        )
     ]
 
     print()
