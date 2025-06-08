@@ -46,8 +46,8 @@ to get the global scope.
 """
 MAXARGS = 4
 MINARGS = 4
-ANSII_BOLD_YELLOW = "\033[1;31m"
-ANSII_RESET = "\033[0m"
+ANSI_BOLD_YELLOW = "\033[1;31m"
+ANSI_RESET = "\033[0m"
 
 
 def main(args: list[str]):
@@ -79,7 +79,7 @@ def main(args: list[str]):
         line = line.lstrip()
         line = re.sub(
             rf"\b{symbol_name}\b",
-            f"{ANSII_BOLD_YELLOW}{symbol_name}{ANSII_RESET}",
+            f"{ANSI_BOLD_YELLOW}{symbol_name}{ANSI_RESET}",
             line,
             count=1,
         )
