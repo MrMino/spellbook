@@ -13,7 +13,11 @@ from pprint import pprint
 
 
 def flatten_ast(tree: ast.AST):
-    nodes = [node for node in ast.walk(tree) if isinstance(node, (ast.stmt, ast.expr))]
+    nodes = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.stmt, ast.expr, ast.arg))
+    ]
     return sorted(nodes, key=lambda n: n.lineno)
 
 
