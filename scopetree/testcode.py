@@ -74,3 +74,48 @@ class CursedCode5:
         @lambda d: None
         def confusing(arg=lambda x: None) -> lambda y: None:
             pass
+
+
+def complex_function(x):
+    y = 0
+    z = []
+    for i in range(10):
+        if x % 2 == 0:
+            y += i * 2
+            z.append(y)
+        else:
+            y -= i
+            z.append(-y)
+        if y > 20:
+            x += 1
+        elif y < -10:
+            x -= 1
+        else:
+            x *= 2
+    for j in z:
+        if j % 3 == 0:
+            y += j // 3
+        elif j % 5 == 0:
+            y -= j // 5
+        else:
+            y += j % 7
+    z = [a * 2 if a % 2 == 0 else a + 3 for a in z]
+    if sum(z) > 100:
+        x, y = y, x
+    elif sum(z) < 0:
+        x = -x
+    else:
+        y = -y
+    while x > 0:
+        if x % 2 == 0:
+            x //= 2
+        else:
+            x -= 1
+        y += 1
+        if y % 10 == 0:
+            break
+    for k in range(5):
+        z.append((x + y + k) % 7)
+    if len(z) > 20:
+        z = z[:20]
+    return x, y, z
