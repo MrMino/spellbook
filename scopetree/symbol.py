@@ -82,6 +82,12 @@ def main(args: list[str]):
         print(f"Scope not found: {scope_path!r}")
         sys.exit(1)
 
+    try:
+        symbol = target_scope.symbols.lookup(symbol_name)
+    except KeyError:
+        print(f"Scope {scope_path!r} does not contain symbol {symbol_name!r}")
+        sys.exit(1)
+
     ast_nodes = flatten_ast(target_scope.ast_node)
     lines = [
         node.lineno
@@ -97,7 +103,6 @@ def main(args: list[str]):
     ]
 
     if exec == "symbol_usage":
-        symbol = target_scope.symbols.lookup(symbol_name)
         print(symbol_summary(symbol))
 
         print()
