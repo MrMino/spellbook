@@ -48,16 +48,14 @@ MAXARGS = 4
 MINARGS = 4
 ANSI_BOLD_YELLOW = "\033[1;31m"
 ANSI_RESET = "\033[0m"
+ANSI_GREY = "\033[90m"
 
 
 def main(args: list[str]):
-    path, scope_path, symbol_name = args
+    exec, path, scope_path, symbol_name = args
 
     scope_tree = ScopeTreeRoot.from_file(path)
     target_scope = scope_traverse(scope_tree, scope_path)
-
-    symbol = target_scope.symbols.lookup(symbol_name)
-    print(symbol_summary(symbol))
 
     ast_nodes = flatten_ast(target_scope.ast_node)
     lines = [
@@ -71,20 +69,41 @@ def main(args: list[str]):
         )
     ]
 
-    print()
-    print(f"{symbol_name!r} usage in {path}:")
+    if exec.removesuffix(".py") == "symbol_usage":
+        symbol = target_scope.symbols.lookup(symbol_name)
+        print(symbol_summary(symbol))
 
-    for lineno in lines:
-        line = linecache.getline(path, lineno)
-        line = line.lstrip()
-        line = re.sub(
-            rf"\b{symbol_name}\b",
-            f"{ANSI_BOLD_YELLOW}{symbol_name}{ANSI_RESET}",
-            line,
-            count=1,
-        )
+        print()
+        print(f"{symbol_name!r} usage in {path}:")
 
-        print(f"At line {lineno}:\n\t{line}")
+        for lineno in lines:
+            line = linecache.getline(path, lineno)
+            line = line.lstrip()
+            line = re.sub(
+                rf"\b{symbol_name}\b",
+                f"{ANSI_BOLD_YELLOW}{symbol_name}{ANSI_RESET}",
+                line,
+                count=1,
+            )
+
+            print(f"At line {lineno}:\n\t{line}")
+
+    elif exec.removesuffix(".py") == "symbol_code":
+        ruler_width = len(str(max(lines)))
+
+        for lineno in lines:
+            line = linecache.getline(path, lineno)
+            line = re.sub(
+                rf"\b{symbol_name}\b",
+                f"{ANSI_BOLD_YELLOW}{symbol_name}{ANSI_RESET}",
+                line,
+                count=1,
+            )
+
+            if sys.stdout.isatty():
+                print(f"{ANSI_GREY}{lineno:>{ruler_width}}{ANSI_RESET} {line}", end="")
+            else:
+                print(line, end="")
 
 
 if __name__ == "__main__":
@@ -92,5 +111,4 @@ if __name__ == "__main__":
         print(USAGE)
         sys.exit(1)
 
-    sys.argv.pop(0)
     main(sys.argv)

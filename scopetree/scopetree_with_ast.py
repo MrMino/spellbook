@@ -49,7 +49,7 @@ class ScopeTreeNode:
         self.children = []
         self.child_names = []
         self.parent = parent
-        self.ast_node = None  # Assigned by ScopeTreeRoot
+        self.ast_node: ast.AST = None  # Assigned by ScopeTreeRoot
 
         # The children symbol tables aren't necessarily ordered by their line numbers.
         # Consider the following code:
