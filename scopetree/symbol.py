@@ -91,6 +91,8 @@ def main(args: list[str]):
             and node.id == symbol_name
             or hasattr(node, "arg")
             and node.arg == symbol_name
+            or hasattr(node, "name")
+            and node.name == symbol_name
         )
     ]
 
