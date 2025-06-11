@@ -1,3 +1,4 @@
+#!/bin/env python
 """
 Given a file, scope, and a symbol name, finds all usage of the specified symbol
 in the scope.
@@ -54,6 +55,8 @@ ANSI_GREY = "\033[90m"
 def main(args: list[str]):
     exec, path, scope_path, symbol_name = args
 
+    exec = exec.removeprefix("./")
+
     scope_tree = ScopeTreeRoot.from_file(path)
     target_scope = scope_traverse(scope_tree, scope_path)
 
@@ -69,7 +72,7 @@ def main(args: list[str]):
         )
     ]
 
-    if exec.removesuffix(".py") == "symbol_usage":
+    if exec == "symbol_usage":
         symbol = target_scope.symbols.lookup(symbol_name)
         print(symbol_summary(symbol))
 
@@ -88,7 +91,7 @@ def main(args: list[str]):
 
             print(f"At line {lineno}:\n\t{line}")
 
-    elif exec.removesuffix(".py") == "symbol_code":
+    elif exec == "symbol_code":
         ruler_width = len(str(max(lines)))
 
         for lineno in lines:
