@@ -28,22 +28,40 @@ def symbol_summary(symbol: Symbol) -> str:
     )
 
 
-def scope_traverse(scope_tree_root: ScopeTreeRoot, scope_path: str) -> ScopeTreeNode:
+def scope_traverse(
+    scope_tree_root: ScopeTreeRoot, scope_path: str
+) -> ScopeTreeNode | None:
     if scope_path == ".":
         return scope_tree_root
 
-    next_node: ScopeTreeNode = scope_tree_root
-    for idx in (int(num) for num in scope_path.split(".")):
-        next_node = next_node.children[idx]
+    segments = scope_path.split(".")
+
+    next_node: ScopeTreeNode | None = scope_tree_root
+    for segment in segments:
+        if next_node is None:
+            return None
+        next_node = find_subscope(next_node, segment)
 
     return next_node
+
+
+def find_subscope(scope: ScopeTreeNode, scope_id: str) -> ScopeTreeNode | None:
+    try:
+        scope_idx = int(scope_id)
+    except ValueError:  # Not an integer id
+        try:
+            scope_idx = scope.child_names.index(scope_id)
+        except ValueError:  # Not found
+            return None
+    return scope.children[scope_idx]
 
 
 USAGE = f"""\
 Usage: {sys.argv[0]} <path> <scope> <symbol>"
 
-You can specify a scope using indexes from ScopeTreeRoot, e.g. "1.2.3.4" or "."
-to get the global scope.
+You can specify a scope using indexes from ScopeTreeRoot, e.g. "1.2.3.4"
+or using the scope names, e.g. "1.2.class.func"
+or "." to get the global scope.
 """
 MAXARGS = 4
 MINARGS = 4
@@ -59,6 +77,10 @@ def main(args: list[str]):
 
     scope_tree = ScopeTreeRoot.from_file(path)
     target_scope = scope_traverse(scope_tree, scope_path)
+
+    if target_scope is None:
+        print(f"Scope not found: {scope_path!r}")
+        sys.exit(1)
 
     ast_nodes = flatten_ast(target_scope.ast_node)
     lines = [
