@@ -111,7 +111,7 @@ def main(args: list[str]):
 
 if __name__ == "__main__":
     if not (MINARGS <= len(sys.argv) <= MAXARGS):
-        print(USAGE)
+        print(USAGE, end="")
         sys.exit(1)
 
     main(sys.argv)
