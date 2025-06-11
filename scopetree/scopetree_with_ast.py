@@ -114,6 +114,7 @@ class ScopeTreeRoot(ScopeTreeNode):
         super().__init__(symbols, None)
 
         self._find_ast_nodes(ast_tree)
+        self.ast_node = ast_tree
 
     def __str__(self):
         return f"Global scope ({self.path})"
